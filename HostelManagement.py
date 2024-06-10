@@ -1,7 +1,7 @@
 import sqlite3
 import streamlit as st
 
-
+# Database functions
 def create_connection():
     conn = sqlite3.connect('hostel_management.db')
     return conn
@@ -10,7 +10,7 @@ def create_table():
     conn = create_connection()
     cursor = conn.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS students (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        roll_no TEXT PRIMARY KEY,
                         name TEXT NOT NULL,
                         age INTEGER NOT NULL,
                         room_number TEXT NOT NULL
@@ -18,10 +18,10 @@ def create_table():
     conn.commit()
     conn.close()
 
-def add_student(name, age, room_number):
+def add_student(roll_no, name, age, room_number):
     conn = create_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO students (name, age, room_number) VALUES (?, ?, ?)', (name, age, room_number))
+    cursor.execute('INSERT INTO students (roll_no, name, age, room_number) VALUES (?, ?, ?, ?)', (roll_no, name, age, room_number))
     conn.commit()
     conn.close()
 
@@ -33,17 +33,17 @@ def get_students():
     conn.close()
     return rows
 
-def update_student(student_id, name, age, room_number):
+def update_student(roll_no, name, age, room_number):
     conn = create_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE students SET name = ?, age = ?, room_number = ? WHERE id = ?', (name, age, room_number, student_id))
+    cursor.execute('UPDATE students SET name = ?, age = ?, room_number = ? WHERE roll_no = ?', (name, age, room_number, roll_no))
     conn.commit()
     conn.close()
 
-def delete_student(student_id):
+def delete_student(roll_no):
     conn = create_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM students WHERE id = ?', (student_id,))
+    cursor.execute('DELETE FROM students WHERE roll_no = ?', (roll_no,))
     conn.commit()
     conn.close()
 
@@ -59,12 +59,13 @@ def main():
     
     if choice == "Create":
         st.subheader("Add Student")
+        roll_no = st.text_input("Roll Number")
         name = st.text_input("Name")
         age = st.number_input("Age", min_value=1)
         room_number = st.text_input("Room Number")
         
         if st.button("Add"):
-            add_student(name, age, room_number)
+            add_student(roll_no, name, age, room_number)
             st.success(f"Added {name} to the database")
     
     elif choice == "Read":
@@ -72,7 +73,7 @@ def main():
         students = get_students()
         
         for student in students:
-            st.text(f"ID: {student[0]}")
+            st.text(f"Roll Number: {student[0]}")
             st.text(f"Name: {student[1]}")
             st.text(f"Age: {student[2]}")
             st.text(f"Room Number: {student[3]}")
@@ -83,27 +84,27 @@ def main():
         students = get_students()
         student_dict = {student[0]: student for student in students}
         
-        selected_id = st.selectbox("Select Student", list(student_dict.keys()))
-        selected_student = student_dict[selected_id]
+        selected_roll_no = st.selectbox("Select Student by Roll Number", list(student_dict.keys()))
+        selected_student = student_dict[selected_roll_no]
         
         name = st.text_input("Name", value=selected_student[1])
         age = st.number_input("Age", value=selected_student[2], min_value=1)
         room_number = st.text_input("Room Number", value=selected_student[3])
         
         if st.button("Update"):
-            update_student(selected_id, name, age, room_number)
-            st.success(f"Updated student with ID {selected_id}")
+            update_student(selected_roll_no, name, age, room_number)
+            st.success(f"Updated student with Roll Number {selected_roll_no}")
     
     elif choice == "Delete":
         st.subheader("Delete Student")
         students = get_students()
         student_dict = {student[0]: student for student in students}
         
-        selected_id = st.selectbox("Select Student", list(student_dict.keys()))
+        selected_roll_no = st.selectbox("Select Student by Roll Number", list(student_dict.keys()))
         
         if st.button("Delete"):
-            delete_student(selected_id)
-            st.success(f"Deleted student with ID {selected_id}")
+            delete_student(selected_roll_no)
+            st.success(f"Deleted student with Roll Number {selected_roll_no}")
 
 if __name__ == '__main__':
     main()
