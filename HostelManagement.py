@@ -1,7 +1,7 @@
 import sqlite3
 import streamlit as st
 
-# Database functions
+
 def create_connection():
     conn = sqlite3.connect('hostel_management.db')
     return conn
